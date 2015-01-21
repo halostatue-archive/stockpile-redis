@@ -1,6 +1,5 @@
 = stockpile-redis
 
-home :: https://stockpile.github.io/
 code :: https://github.com/halostatue/stockpile-redis/
 bugs :: https://github.com/halostatue/stockpile-redis/issues
 continuous integration :: {<img src="https://travis-ci.org/halostatue/stockpile-redis.png" />}[https://travis-ci.org/halostatue/stockpile-redis]
