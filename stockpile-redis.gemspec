@@ -12,8 +12,8 @@ Gem::Specification.new do |s|
   s.description = "stockpile-redis is a connection manager for Redis to be used with\n{Stockpile}[https://github.com/halostatue/stockpile]."
   s.email = ["halostatue@gmail.com"]
   s.extra_rdoc_files = ["Contributing.rdoc", "History.rdoc", "Licence.rdoc", "Manifest.txt", "README.rdoc", "Contributing.rdoc", "History.rdoc", "Licence.rdoc", "README.rdoc"]
-  s.files = [".autotest", ".gemtest", ".minitest.rb", ".travis.yml", "Contributing.rdoc", "Gemfile", "History.rdoc", "Licence.rdoc", "Manifest.txt", "README.rdoc", "Rakefile", "lib/stockpile-redis.rb", "lib/stockpile/redis.rb", "test/minitest_config.rb", "test/test_stockpile_adapter_redis.rb", "test/test_stockpile_redis.rb"]
-  s.homepage = "https://stockpile.github.io/"
+  s.files = [".autotest", ".gemtest", ".minitest.rb", ".travis.yml", ".workenv", "Contributing.rdoc", "Gemfile", "History.rdoc", "Licence.rdoc", "Manifest.txt", "README.rdoc", "Rakefile", "lib/stockpile-redis.rb", "lib/stockpile/redis.rb", "test/minitest_config.rb", "test/test_stockpile_adapter_redis.rb", "test/test_stockpile_redis.rb"]
+  s.homepage = "https://github.com/halostatue/stockpile-redis/"
   s.licenses = ["MIT"]
   s.rdoc_options = ["--main", "README.rdoc"]
   s.required_ruby_version = Gem::Requirement.new(">= 1.9.2")
@@ -41,7 +41,6 @@ Gem::Specification.new do |s|
       s.add_development_dependency(%q<minitest-focus>, ["~> 1.1"])
       s.add_development_dependency(%q<minitest-moar>, ["~> 0.0"])
       s.add_development_dependency(%q<minitest-pretty_diff>, ["~> 0.1"])
-      s.add_development_dependency(%q<minitest-rerun>, ["~> 0.1"])
       s.add_development_dependency(%q<rake>, [">= 10.0"])
       s.add_development_dependency(%q<simplecov>, ["~> 0.7"])
       s.add_development_dependency(%q<hoe>, ["~> 3.13"])
@@ -62,7 +61,6 @@ Gem::Specification.new do |s|
       s.add_dependency(%q<minitest-focus>, ["~> 1.1"])
       s.add_dependency(%q<minitest-moar>, ["~> 0.0"])
       s.add_dependency(%q<minitest-pretty_diff>, ["~> 0.1"])
-      s.add_dependency(%q<minitest-rerun>, ["~> 0.1"])
       s.add_dependency(%q<rake>, [">= 10.0"])
       s.add_dependency(%q<simplecov>, ["~> 0.7"])
       s.add_dependency(%q<hoe>, ["~> 3.13"])
@@ -84,7 +82,6 @@ Gem::Specification.new do |s|
     s.add_dependency(%q<minitest-focus>, ["~> 1.1"])
     s.add_dependency(%q<minitest-moar>, ["~> 0.0"])
     s.add_dependency(%q<minitest-pretty_diff>, ["~> 0.1"])
-    s.add_dependency(%q<minitest-rerun>, ["~> 0.1"])
     s.add_dependency(%q<rake>, [">= 10.0"])
     s.add_dependency(%q<simplecov>, ["~> 0.7"])
     s.add_dependency(%q<hoe>, ["~> 3.13"])
