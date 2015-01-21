@@ -18,3 +18,25 @@ module Minitest::FakeRedis
 
   Minitest::Test.send(:include, self)
 end
+
+module Minitest::ENVStub
+  def stub_env env, options = {}, *block_args, &block
+    mock = lambda { |key|
+      env.fetch(key) { |k|
+        if options[:passthrough]
+          ENV.send(:"__minitest_stub__[]", k)
+        else
+          nil
+        end
+      }
+    }
+
+    if defined? Minitest::Moar::Stubbing
+      stub ENV, :[], mock, *block_args, &block
+    else
+      ENV.stub :[], mock, *block_args, &block
+    end
+  end
+
+  Minitest::Test.send(:include, self)
+end

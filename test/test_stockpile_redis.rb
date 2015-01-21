@@ -7,10 +7,10 @@ describe Stockpile::Redis do
     assert_equal actual_clients.sort, expected_clients.sort
   end
 
-  let(:rcm) { Stockpile::Redis.new }
-  let(:rcm_namespace) { Stockpile::Redis.new(namespace: 'Z') }
-  let(:rcm_wide) { Stockpile::Redis.new(narrow: false) }
-  let(:rcm_narrow) { Stockpile::Redis.new(narrow: true) }
+  let(:rcm) { stub_env({}) { Stockpile::Redis.new } }
+  let(:rcm_namespace) { stub_env({}) { Stockpile::Redis.new(namespace: 'Z') } }
+  let(:rcm_wide) { stub_env({}) { Stockpile::Redis.new(narrow: false) } }
+  let(:rcm_narrow) { stub_env({}) { Stockpile::Redis.new(narrow: true) } }
 
   describe 'constructor' do
     it "uses the default connection width by default" do
@@ -47,6 +47,46 @@ describe Stockpile::Redis do
 
     it "has no clients by default" do
       assert_clients [], ::Stockpile::Redis.new
+    end
+
+    describe "namespace support" do
+      def assert_namespace(client)
+        assert_equal 'stockpile', client.instance_variable_get(:@namespace)
+      end
+
+      it "will set namespace from ENV['REDIS_NAMESPACE']" do
+        stub_env({ 'REDIS_NAMESPACE' => 'stockpile' }) do
+          assert_namespace ::Stockpile::Redis.new
+        end
+      end
+
+      it "will set namespace from Rails.env" do
+        begin
+          ::Rails = Class.new do
+            def self.env
+              'stockpile'
+            end
+          end
+
+          stub_env({}) do
+            assert_namespace ::Stockpile::Redis.new
+          end
+        ensure
+          Object.send(:remove_const, :Rails)
+        end
+      end
+
+      it "will set namespace from ENV['RACK_ENV']" do
+        stub_env({ 'RACK_ENV' => 'stockpile' }) do
+          assert_namespace ::Stockpile::Redis.new
+        end
+      end
+
+      it "will set namespace from parameters" do
+        stub_env({ 'RACK_ENV' => 'test' }) do
+          assert_namespace ::Stockpile::Redis.new(namespace: 'stockpile')
+        end
+      end
     end
   end
 

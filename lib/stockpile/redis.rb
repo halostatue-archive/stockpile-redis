@@ -33,7 +33,7 @@ class Stockpile
       @namespace     = options.fetch(:namespace) {
         @redis_options.fetch(:namespace) {
           ENV['REDIS_NAMESPACE'] ||
-          (defined?(Rails) && Rails.env) ||
+          (defined?(::Rails) && ::Rails.env) ||
           ENV['RACK_ENV']
         }
       }
