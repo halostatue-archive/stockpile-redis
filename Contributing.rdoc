@@ -1,9 +1,9 @@
 == Contributing
 
-I value any contribution to stockpile you can provide: a bug report, a
+I value any contribution to stockpile-redis you can provide: a bug report, a
 feature request, or code contributions.
 
-As stockpile is a complex codebase, there are a few guidelines:
+As stockpile-redis is a complex codebase, there are a few guidelines:
 
 * Changes *will* *not* be accepted without tests. The test suite is written
   with {Minitest}[https://github.com/seattlerb/minitest].
@@ -18,7 +18,7 @@ As stockpile is a complex codebase, there are a few guidelines:
 
 === Test Dependencies
 
-stockpile uses Ryan Davis’s {Hoe}[https://github.com/seattlerb/hoe]
+stockpile-redis uses Ryan Davis’s {Hoe}[https://github.com/seattlerb/hoe]
 to manage the release process, and it adds a number of rake tasks. You will
 mostly be interested in:
 
@@ -32,8 +32,8 @@ which runs the tests the same way that:
 will do.
 
 To assist with the installation of the development dependencies for
-stockpile, I have provided the simplest possible Gemfile pointing to
-the (generated) +stockpile.gemspec+ file. This will permit you to do:
+stockpile-redis, I have provided the simplest possible Gemfile pointing to
+the (generated) +stockpile-redis.gemspec+ file. This will permit you to do:
 
     $ bundle install
 
@@ -50,15 +50,15 @@ generate the RDoc.
 Here's the most direct way to get your work merged into the project:
 
 * Fork the project.
-* Clone down your fork (<tt>git clone git://github.com/halostatue/stockpile.git</tt>).
+* Clone down your fork (<tt>git clone git://github.com/halostatue/stockpile-redis.git</tt>).
 * Create a topic branch to contain your change (<tt>git checkout -b my\_awesome\_feature</tt>).
 * Hack away, add tests. Not necessarily in that order.
 * Make sure everything still passes by running +rake+.
 * If necessary, rebase your commits into logical chunks, without errors.
 * Push the branch up (<tt>git push origin my\_awesome\_feature</tt>).
-* Create a pull request against halostatue/stockpile and describe
+* Create a pull request against halostatue/stockpile-redis and describe
   what your change does and the why you think it should be merged.
 
 === Contributors
 
-* Austin Ziegler created stockpile.
+* Austin Ziegler created stockpile-redis.

@@ -10,7 +10,7 @@ Hoe.plugin :minitest
 Hoe.plugin :travis
 Hoe.plugin :email unless ENV['CI'] or ENV['TRAVIS']
 
-spec = Hoe.spec 'stockpile' do
+spec = Hoe.spec 'stockpile-redis' do
   developer('Austin Ziegler', 'halostatue@gmail.com')
 
   self.history_file = 'History.rdoc'
@@ -22,6 +22,9 @@ spec = Hoe.spec 'stockpile' do
   self.need_tar = true
   self.require_ruby_version '>= 1.9.2'
 
+  self.extra_deps << ['stockpile', '~> 1.0']
+  self.extra_deps << ['redis', '~> 3.0']
+  self.extra_deps << ['redis-namespace', '~> 1.0']
   self.extra_dev_deps << ['fakeredis', '~> 0.5']
   self.extra_dev_deps << ['hoe-doofus', '~> 1.0']
   self.extra_dev_deps << ['hoe-gemspec2', '~> 1.1']

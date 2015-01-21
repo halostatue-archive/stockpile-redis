@@ -1,27 +1,26 @@
 require 'minitest_config'
-require 'redis-namespace'
-require 'stockpile'
+require 'stockpile/redis'
 
-describe Stockpile::RedisConnectionManager do
+describe Stockpile::Redis do
   def assert_clients expected_clients, connector
     actual_clients = connector.instance_variable_get(:@clients).keys
     assert_equal actual_clients.sort, expected_clients.sort
   end
 
-  let(:rcm) { Stockpile::RedisConnectionManager.new }
-  let(:rcm_namespace) { Stockpile::RedisConnectionManager.new(namespace: 'Z') }
-  let(:rcm_wide) { Stockpile::RedisConnectionManager.new(narrow: false) }
-  let(:rcm_narrow) { Stockpile::RedisConnectionManager.new(narrow: true) }
+  let(:rcm) { Stockpile::Redis.new }
+  let(:rcm_namespace) { Stockpile::Redis.new(namespace: 'Z') }
+  let(:rcm_wide) { Stockpile::Redis.new(narrow: false) }
+  let(:rcm_narrow) { Stockpile::Redis.new(narrow: true) }
 
   describe 'constructor' do
     it "uses the default connection width by default" do
       stub ::Stockpile, :narrow?, lambda { false } do
-        refute Stockpile::RedisConnectionManager.new.narrow?,
+        refute Stockpile::Redis.new.narrow?,
           "should be narrow, but is not"
       end
 
       stub ::Stockpile, :narrow?, lambda { true } do
-        assert Stockpile::RedisConnectionManager.new.narrow?,
+        assert Stockpile::Redis.new.narrow?,
           "is not narrow, but should be"
       end
     end
@@ -42,12 +41,12 @@ describe Stockpile::RedisConnectionManager do
           url: 'redis://xyz/'
         }
       }
-      rcm = ::Stockpile::RedisConnectionManager.new(options)
+      rcm = ::Stockpile::Redis.new(options)
       assert_equal 'xyz', rcm.connect.client.options[:host]
     end
 
     it "has no clients by default" do
-      assert_clients [], ::Stockpile::RedisConnectionManager.new
+      assert_clients [], ::Stockpile::Redis.new
     end
   end
 

@@ -9,7 +9,7 @@ Licence.rdoc
 Manifest.txt
 README.rdoc
 Rakefile
-bin/stockpile
-lib/stockpile.rb
+lib/stockpile-redis.rb
+lib/stockpile/redis.rb
 test/minitest_config.rb
-test/test_stockpile.rb
+test/test_stockpile_redis.rb

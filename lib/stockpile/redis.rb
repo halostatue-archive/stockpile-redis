@@ -1,8 +1,14 @@
 # coding: utf-8
 
+require 'redis'
+require 'redis/namespace'
+require 'stockpile'
+
 class Stockpile
   # A connection manager for Redis.
-  class RedisConnectionManager
+  class Redis
+    VERSION = '1.0' # :nodoc:
+
     # Create a new Redis connection manager with the provided options.
     #
     # == Options
@@ -158,9 +164,9 @@ class Stockpile
     def connect_for_any
       return connection if connection && narrow?
 
-      r = Redis.new(@redis_options)
-      if @namespace && defined? Redis::Namespace
-        r = Redis::Namespace.new(@namespace, redis: r)
+      r = ::Redis.new(@redis_options)
+      if @namespace
+        r = ::Redis::Namespace.new(@namespace, redis: r)
       end
       r
     end
@@ -168,13 +174,22 @@ class Stockpile
     def connect_for_resque
       r = connect_for_any
 
-      if r.instance_of?(Redis::Namespace) && r.namespace.to_s !~ /:resque\z/
-        r = Redis::Namespace.new(:"#{r.namespace}:resque", redis: r.redis)
-      elsif r.instance_of?(Redis)
-        r = Redis::Namespace.new("resque", redis: r)
+      if r.instance_of?(::Redis::Namespace) && r.namespace.to_s !~ /:resque\z/
+        r = ::Redis::Namespace.new(:"#{r.namespace}:resque", redis: r.redis)
+      elsif r.instance_of?(::Redis)
+        r = ::Redis::Namespace.new("resque", redis: r)
       end
 
       r
     end
+  end
+
+  # Enables module or class +mod+ to contain a Stockpile instance that defaults
+  # the created +cache+ method to using Stockpile::Redis as the key-value store
+  # connection manager.
+  #
+  # See <tt>Stockpile.inject!</tt>.
+  def self.inject_redis!(mod, options = {})
+    inject!(mod, options.merge(default_manager: Stockpile::Redis))
   end
 end
