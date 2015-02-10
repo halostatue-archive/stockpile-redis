@@ -105,11 +105,15 @@ describe Stockpile::Redis do
 
     describe "with a wide connection width" do
       before do
-        rcm_wide.connect(:redis, :rollout)
+        rcm_wide.connect(:redis, rollout: { namespace: 'rollout' })
       end
 
       it "connects multiple clients" do
         assert_clients [ :redis, :rollout ], rcm_wide
+      end
+
+      it "creates a Redis::Namespace for rollout" do
+        assert_kind_of Redis::Namespace, rcm_wide.connection_for(:rollout)
       end
 
       it "connects *different* clients" do
@@ -121,17 +125,25 @@ describe Stockpile::Redis do
 
     describe "with a narrow connection width" do
       before do
-        rcm_narrow.connect(:redis, :rollout)
+        rcm_narrow.connect(:redis, rollout: { namespace: 'rollout' })
       end
 
       it "appears to connect multiple clients" do
         assert_clients [ :redis, :rollout ], rcm_narrow
       end
 
+      it "creates a Redis::Namespace for rollout" do
+        assert_kind_of Redis::Namespace, rcm_narrow.connection_for(:rollout)
+      end
+
       it "returns identical clients" do
         assert_same rcm_narrow.connection, rcm_narrow.connection_for(:redis)
-        assert_same rcm_narrow.connection, rcm_narrow.connection_for(:rollout)
-        assert_same rcm_narrow.connection_for(:redis), rcm_narrow.connection_for(:rollout)
+        refute_same rcm_narrow.connection, rcm_narrow.connection_for(:rollout)
+        assert_same rcm_narrow.connection,
+          rcm_narrow.connection_for(:rollout).redis
+        refute_same rcm_narrow.connection_for(:redis), rcm_narrow.connection_for(:rollout)
+        assert_same rcm_narrow.connection_for(:redis),
+          rcm_narrow.connection_for(:rollout).redis
       end
     end
   end

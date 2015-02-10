@@ -22,7 +22,7 @@ spec = Hoe.spec 'stockpile-redis' do
   self.need_tar = true
   self.require_ruby_version '>= 1.9.2'
 
-  self.extra_deps << ['stockpile', '~> 1.0']
+  self.extra_deps << ['stockpile', '~> 1.1']
   self.extra_deps << ['redis', '~> 3.0']
   self.extra_deps << ['redis-namespace', '~> 1.0']
   self.extra_dev_deps << ['fakeredis', '~> 0.5']

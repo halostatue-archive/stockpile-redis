@@ -13,10 +13,13 @@ stockpile-redis is a connection manager for Redis to be used with
 
 stockpile-redis supports both normal Redis connections (<tt>Redis.new</tt>),
 and Redis::Namespace connections (<tt>Redis::Namespace.new('namespace', redis:
-Redis.new</tt>).
+Redis.new)</tt>).
 
 stockpile-redis provides special-case handling for connections for Resque when
 the name of the client is +:resque+.
+
+Release 1.1 adds a minor enhancement to allow for namespaces for named clients
+using Stockpile::Redis#connection_for.
 
 == Synopsis
 
@@ -38,6 +41,12 @@ the name of the client is +:resque+.
   # Special Redis::Namespace handling for Resque clients.
   narrow.connection_for(:resque) != narrow.connection # => true
   narrow.connection_for(:resque).redis == narrow.connection # => true
+
+  # Standard namespace handling.
+  narrow.connection_for(:other, namespace: 'other') !=
+    narrow.connection # => true
+  narrow.connection_for(:other, namespace: 'other').redis !=
+    narrow.connection # => true
 
   # Show a Stockpile with no adapter capabilities, but name the method
   # stockpile, not cache. This will still usefully manage connections.
@@ -96,7 +105,7 @@ the name of the client is +:resque+.
 
 Put stockpile-redis in your Gemfile:
 
-  gem 'stockpile-redis', '~> 1.0'
+  gem 'stockpile-redis', '~> 1.1'
 
 Or manually install:
 

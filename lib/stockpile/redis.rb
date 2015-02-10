@@ -2,12 +2,12 @@
 
 require 'redis'
 require 'redis/namespace'
-require 'stockpile'
+require 'stockpile/base'
 
 class Stockpile
   # A connection manager for Redis.
-  class Redis
-    VERSION = '1.0' # :nodoc:
+  class Redis < Stockpile::Base
+    VERSION = '1.1' # :nodoc:
 
     # Create a new Redis connection manager with the provided options.
     #
@@ -24,13 +24,11 @@ class Stockpile
     #               <tt>options[:redis]</tt>, a namespace will be generated
     #               from one of the following: <tt>$REDIS_NAMESPACE</tt>,
     #               <tt>Rails.env</tt> (if in Rails), or <tt>$RACK_ENV</tt>.
-    # +narrow+::    Use a narrow connection width if true; if not provided,
-    #               uses the value of ::Stockpile.narrow? in this connection
-    #               manager.
     def initialize(options = {})
-      @redis_options = options.fetch(:redis, {})
-      @narrow        = !!options.fetch(:narrow, ::Stockpile.narrow?)
-      @namespace     = options.fetch(:namespace) {
+      super
+
+      @redis_options = (@options.delete(:redis) || {}).dup
+      @namespace     = @options.fetch(:namespace) {
         @redis_options.fetch(:namespace) {
           ENV['REDIS_NAMESPACE'] ||
           (defined?(::Rails) && ::Rails.env) ||
@@ -38,23 +36,11 @@ class Stockpile
         }
       }
 
-      if @redis_options.has_key?(:namespace)
-        @redis_options = @redis_options.reject { |k, _| k == :namespace }
-      end
-
-      @connection = nil
-      @clients    = {}
+      @options.delete(:namespace)
+      @redis_options.delete(:namespace)
     end
 
-    # The current primary connection to Redis.
-    attr_reader :connection
-
-    # Indicates if this connection manager is using a narrow connection
-    # width.
-    def narrow?
-      @narrow
-    end
-
+    ##
     # Connect to Redis, unless already connected. Additional client connections
     # can be specified in the parameters as a shorthand for calls to
     # #connection_for.
@@ -67,112 +53,136 @@ class Stockpile
     #
     #   # This means the same as above.
     #   manager.connect(:redis)
-    def connect(*client_names)
-      @connection ||= connect_for_any
+    #
+    # === Clients
+    #
+    # +clients+ may be provided in one of several ways:
+    #
+    # * A Hash object, mapping client names to client options.
+    #
+    #     connect(redis: nil, rollout: { namespace: 'rollout' })
+    #     # Transforms into:
+    #     # connect(redis: {}, rollout: { namespace: 'rollout' })
+    #
+    # * An (implicit) array of client names, for connections with no options
+    #   provided.
+    #
+    #     connect(:redis, :resque, :rollout)
+    #     # Transforms into:
+    #     # connect(redis: {}, resque: {}, rollout: {})
+    #
+    # * An array of Hash objects, mapping client names to client options.
+    #
+    #     connect({ redis: nil },
+    #             { rollout: { namespace: 'rollout' } })
+    #     # Transforms into:
+    #     # connect(redis: {}, rollout: { namespace: 'rollout' })
+    #
+    # * A mix of client names and Hash objects:
+    #
+    #     connect(:redis, { rollout: { namespace: 'rollout' } })
+    #     # Transforms into:
+    #     # connect(redis: {}, rollout: { namespace: 'rollout' })
+    #
+    # ==== Client Options
+    #
+    # Stockpile::Redis supports one option, +namespace+. The use of this with a
+    # client automatically wraps the client in the provided +namespace+. The
+    # namespace will be within the global namespace for the Stockpile::Redis
+    # instance, if one has been set.
+    #
+    #   r = Stockpile::Redis.new(namespace: 'first')
+    #   rr = r.client_for(other: { namespace: 'second' })
+    #   rr.set 'found', true
+    #   r.set 'found', true
+    #   rr.keys # => [ 'found' ]
+    #   r.keys # => [ 'found', 'second:found' ]
+    #   r.connection.redis.keys # => [ 'first:found', 'first:second:found' ]
+    #
+    # :method: connect
 
-      clients_from(*client_names).each { |client_name|
-        connection_for(client_name)
-      }
-
-      connection
-    end
-
-    # Perform a client connection to Redis for a specific +client_name+. The
-    # +client_name+ of +:all+ will always return +nil+.
+    ##
+    # Returns a Redis client connection for a particular client. If the
+    # connection manager is using a narrow connection width, this returns the
+    # same as #connection.
+    #
+    # The +client_name+ of +:all+ will always return +nil+.
     #
     # If the requested client does not yet exist, the connection will be
-    # created.
+    # created with the provided options.
     #
     # Because Resque depends on Redis::Namespace, #connection_for will perform
     # special Redis::Namespace handling for a connection with the name
     # +:resque+.
     #
-    # If #narrow? is true, the same Redis connection will be shared between all
-    # clients.
-    #
-    # If a connection has not yet been made, it will be made.
-    def connection_for(client_name)
-      connect unless connection
-      return nil if client_name == :all
-      @clients[client_name] ||= case client_name
-                                when :resque
-                                  connect_for_resque
-                                else
-                                  connect_for_any
-                                end
-    end
+    # :method: connection_for
 
+    ##
     # Reconnect to Redis for some or all clients. The primary connection will
     # always be reconnected; other clients will be reconnected based on the
     # +clients+ provided. Only clients actively managed by previous calls to
     # #connect or #connection_for will be reconnected.
     #
     # If #reconnect is called with the value +:all+, all currently managed
-    # clients will be reconnected.
+    # clients will be reconnected. If #narrow? is true, the primary connection
+    # will be reconnected.
     #
-    # If #narrow? is true, only the primary connection will be reconnected.
-    def reconnect(*client_names)
-      return unless connection
+    # :method: reconnect
 
-      connection.client.reconnect
-
-      unless narrow?
-        clients_from(*client_names).each { |client_name|
-          redis = @clients[client_name]
-          redis.client.reconnect if redis
-        }
-      end
-
-      connection
-    end
-
+    ##
     # Disconnect from Redis for some or all clients. The primary connection
     # will always be disconnected; other clients will be disconnected based on
     # the +clients+ provided. Only clients actively managed by previous calls
     # to #connect or #connection_for will be disconnected.
     #
     # If #disconnect is called with the value +:all+, all currently managed
-    # clients will be disconnected.
+    # clients will be disconnected. If #narrow? is true, the primary connection
+    # will be disconnected.
     #
-    # If #narrow? is true, only the primary connection will be disconnected.
-    def disconnect(*client_names)
-      return unless connection
-
-      unless narrow?
-        clients_from(*client_names).each { |client_name|
-          redis = @clients[client_name]
-          redis.quit if redis
-        }
-      end
-
-      connection.quit
-    end
+    # :method: disconnect
 
     private
-    def clients_from(*client_names)
-      if client_names.size == 1
-        if client_names.first == :all
-          @clients.keys
-        else
-          client_names
-        end
+    def client_connect(name = nil, options = {})
+      options = { namespace: options[:namespace] }
+
+      case name
+      when :resque
+        connect_for_resque(options)
       else
-        client_names
+        connect_for_any(options)
       end
     end
 
-    def connect_for_any
-      return connection if connection && narrow?
+    def client_reconnect(redis = connection())
+      redis.client.reconnect if redis
+    end
 
-      r = ::Redis.new(@redis_options)
-      if @namespace
-        r = ::Redis::Namespace.new(@namespace, redis: r)
+    def client_disconnect(redis = connection())
+      redis.quit if redis
+    end
+
+    def connect_for_any(options)
+      r = if connection && narrow?
+            connection
+          else
+            r = ::Redis.new(@redis_options.merge(options))
+
+            if @namespace
+              ::Redis::Namespace.new(@namespace, redis: r)
+            else
+              r
+            end
+          end
+
+      if options[:namespace]
+        r = ::Redis::Namespace.new(options[:namespace], redis: r)
       end
+
       r
     end
 
-    def connect_for_resque
-      r = connect_for_any
+    def connect_for_resque(options)
+      r = connect_for_any(options)
 
       if r.instance_of?(::Redis::Namespace) && r.namespace.to_s !~ /:resque\z/
         r = ::Redis::Namespace.new(:"#{r.namespace}:resque", redis: r.redis)
