@@ -1,18 +1,17 @@
 ---
+sudo: false
 language: ruby
 rvm:
-  - "2.2"
-  - "2.1"
-  - 2.0.0
-  - 1.9.3
+  - 2.3.0
+  - 2.2
+  - 2.1
+  - 2.0
   - ruby-head
-  - jruby-19mode
-  - jruby-head
+  - jruby-9.0
   - rbx-2
 matrix:
   allow_failures:
     - rvm: rbx-2
-    - rvm: jruby-head
     - rvm: ruby-head
 gemfile:
   - Gemfile
@@ -33,5 +32,3 @@ notifications:
       - halostatue@gmail.com
     on_success: change
     on_failure: always
-sudo:
-  false
