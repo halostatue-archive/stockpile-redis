@@ -2,7 +2,7 @@
 
 code :: https://github.com/halostatue/stockpile-redis/
 bugs :: https://github.com/halostatue/stockpile-redis/issues
-continuous integration :: {<img src="https://travis-ci.org/halostatue/stockpile-redis.png" />}[https://travis-ci.org/halostatue/stockpile-redis]
+continuous integration :: {<img src="https://travis-ci.org/halostatue/stockpile-redis.svg?branch=master" alt="Build Status" />}[https://travis-ci.org/halostatue/stockpile-redis]
 
 == Description
 
@@ -18,8 +18,8 @@ Redis.new)</tt>).
 stockpile-redis provides special-case handling for connections for Resque when
 the name of the client is +:resque+.
 
-Release 1.1 adds a minor enhancement to allow for namespaces for named clients
-using Stockpile::Redis#connection_for.
+Release 2.0 fixes an issue with initialization using OpenStruct for options.
+Ruby 1.9 is no longer supported.
 
 == Synopsis
 
@@ -105,7 +105,7 @@ using Stockpile::Redis#connection_for.
 
 Put stockpile-redis in your Gemfile:
 
-  gem 'stockpile-redis', '~> 1.1'
+  gem 'stockpile-redis', '~> 2.0'
 
 Or manually install:
 

@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 # coding: utf-8
 
 require 'redis'
@@ -7,7 +8,7 @@ require 'stockpile/base'
 class Stockpile
   # A connection manager for Redis.
   class Redis < Stockpile::Base
-    VERSION = '1.1' # :nodoc:
+    VERSION = '2.0' # :nodoc:
 
     # Create a new Redis connection manager with the provided options.
     #
@@ -28,11 +29,10 @@ class Stockpile
       super
 
       @redis_options = (@options.delete(:redis) || {}).dup
+      @redis_options = @redis_options.to_h unless @redis_options.kind_of?(Hash)
       @namespace     = @options.fetch(:namespace) {
         @redis_options.fetch(:namespace) {
-          ENV['REDIS_NAMESPACE'] ||
-          (defined?(::Rails) && ::Rails.env) ||
-          ENV['RACK_ENV']
+          ENV['REDIS_NAMESPACE'] || ENV['RAILS_ENV'] || ENV['RACK_ENV']
         }
       }
 
@@ -142,6 +142,7 @@ class Stockpile
     # :method: disconnect
 
     private
+
     def client_connect(name = nil, options = {})
       options = { namespace: options[:namespace] }
 
@@ -153,11 +154,11 @@ class Stockpile
       end
     end
 
-    def client_reconnect(redis = connection())
+    def client_reconnect(redis = connection)
       redis.client.reconnect if redis
     end
 
-    def client_disconnect(redis = connection())
+    def client_disconnect(redis = connection)
       redis.quit if redis
     end
 
@@ -187,7 +188,7 @@ class Stockpile
       if r.instance_of?(::Redis::Namespace) && r.namespace.to_s !~ /:resque\z/
         r = ::Redis::Namespace.new(:"#{r.namespace}:resque", redis: r.redis)
       elsif r.instance_of?(::Redis)
-        r = ::Redis::Namespace.new("resque", redis: r)
+        r = ::Redis::Namespace.new('resque', redis: r)
       end
 
       r
